@@ -28,11 +28,17 @@ struct KashTasksApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        UNUserNotificationCenter.current().requestAuthorization(
-            options: [.alert, .sound]
-        ) { granted, error in
-            if let error { NSLog("KashTasks: notif auth error \(error)") }
-            NSLog("KashTasks: notifications granted=\(granted)")
+        // Use the async API: the completion-handler variant runs its closure on a
+        // background queue, which trips the Swift 6 main-actor executor assertion
+        // (SIGTRAP) when invoked from this @MainActor-isolated delegate method.
+        Task {
+            do {
+                let granted = try await UNUserNotificationCenter.current()
+                    .requestAuthorization(options: [.alert, .sound])
+                NSLog("KashTasks: notifications granted=\(granted)")
+            } catch {
+                NSLog("KashTasks: notif auth error \(error)")
+            }
         }
 
         do {

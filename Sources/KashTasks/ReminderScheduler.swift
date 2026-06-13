@@ -57,9 +57,15 @@ final class ReminderScheduler: ObservableObject {
             content: content,
             trigger: nil // deliver immediately
         )
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error {
-                NSLog("KashTasks: failed to deliver notification for \(item.title): \(error)")
+        // Async API rather than the completion-handler variant: the latter's closure
+        // runs on a background queue and would trip the Swift 6 main-actor executor
+        // assertion (SIGTRAP) since this type is @MainActor-isolated.
+        let title = item.title
+        Task {
+            do {
+                try await UNUserNotificationCenter.current().add(request)
+            } catch {
+                NSLog("KashTasks: failed to deliver notification for \(title): \(error)")
             }
         }
     }
