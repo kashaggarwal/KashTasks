@@ -10,8 +10,10 @@ let package = Package(
             name: "KashTasks",
             dependencies: ["KashTasksCore"]
         ),
-        .testTarget(
-            name: "KashTasksCoreTests",
+        // Tests run as a plain executable so they work with Command Line Tools
+        // only (XCTest/swift-testing require full Xcode). Run: swift run KashTasksTests
+        .executableTarget(
+            name: "KashTasksTests",
             dependencies: ["KashTasksCore"]
         ),
     ]
