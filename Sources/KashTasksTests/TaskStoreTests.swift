@@ -56,4 +56,18 @@ func runTaskStoreTests(_ t: TestRunner) {
         let store = TaskStore(fileURL: url)
         t.expectTrue(store.items.isEmpty, "missing file -> empty")
     }
+
+    // corrupt file is preserved, not silently wiped
+    do {
+        let url = tempURL()
+        let backup = url.appendingPathExtension("corrupt")
+        defer {
+            try? FileManager.default.removeItem(at: url)
+            try? FileManager.default.removeItem(at: backup)
+        }
+        try! Data("not valid json".utf8).write(to: url)
+        let store = TaskStore(fileURL: url)
+        t.expectTrue(store.items.isEmpty, "corrupt file -> empty in memory")
+        t.expectTrue(FileManager.default.fileExists(atPath: backup.path), "corrupt file backed up to .corrupt")
+    }
 }

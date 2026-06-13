@@ -78,6 +78,10 @@ Restart-safe: on launch the store reloads JSON and the scheduler re-arms still-f
 - **Missed handling:** if a task's `dueDate` already passed while the app was closed, it does
   NOT fire a late notification. Instead it is shown in the list as "missed" (red indicator).
   A due date in the future is armed normally.
+- **Known limitation:** a reminder fires at most once per task per app session. If you edit an
+  already-fired task's due date to a new time, it will not re-fire in the same session
+  (it re-arms on next launch). Re-arming on due-date edit (snooze/reschedule) is a deferred
+  enhancement.
 
 ## Build & Packaging
 

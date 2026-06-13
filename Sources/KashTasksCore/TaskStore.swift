@@ -40,7 +40,18 @@ public final class TaskStore: ObservableObject {
         }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        items = (try? decoder.decode([TodoItem].self, from: data)) ?? []
+        do {
+            items = try decoder.decode([TodoItem].self, from: data)
+        } catch {
+            // The file exists but is unreadable (corrupt or partially written).
+            // Preserve it for recovery instead of silently overwriting it with an
+            // empty list on the next save.
+            let backup = fileURL.appendingPathExtension("corrupt")
+            try? FileManager.default.removeItem(at: backup)
+            try? FileManager.default.moveItem(at: fileURL, to: backup)
+            NSLog("KashTasks: tasks file unreadable; backed up to \(backup.lastPathComponent): \(error)")
+            items = []
+        }
     }
 
     public func save() {

@@ -17,6 +17,10 @@ final class ReminderScheduler: ObservableObject {
     }
 
     func start() {
+        // Idempotent: `start()` is called from the menu popover's onAppear, which
+        // fires on every open. Without this guard each open would leak another timer.
+        guard timer == nil else { return }
+
         // Re-evaluate whenever the store changes...
         cancellable = store.$items
             .sink { [weak self] _ in
@@ -53,6 +57,10 @@ final class ReminderScheduler: ObservableObject {
             content: content,
             trigger: nil // deliver immediately
         )
-        UNUserNotificationCenter.current().add(request)
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error {
+                NSLog("KashTasks: failed to deliver notification for \(item.title): \(error)")
+            }
+        }
     }
 }
