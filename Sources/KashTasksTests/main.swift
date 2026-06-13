@@ -3,5 +3,6 @@ let t = TestRunner()
 
 runTodoItemTests(t)
 runTaskStoreTests(t)
+runTaskSortingTests(t)
 
 t.summarize()
