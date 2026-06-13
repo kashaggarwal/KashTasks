@@ -92,7 +92,12 @@ Restart-safe: on launch the store reloads JSON and the scheduler re-arms still-f
 
 ## Testing
 
-Unit tests via `swift test` for the pure logic:
+> **Toolchain note:** Command Line Tools ship no XCTest/swift-testing (those require full
+> Xcode), so `swift test` cannot run. Tests therefore live in a small executable target
+> `KashTasksTests` with a minimal assertion harness, run via `swift run KashTasksTests`,
+> which exits non-zero on failure. Same TDD discipline, CLT-compatible.
+
+Unit tests (via `swift run KashTasksTests`) for the pure logic:
 - `TaskStore`: JSON round-trip (encode/decode), add/update/complete/delete mutations.
 - Sorting/grouping: group-by-tag, priority-then-dueDate ordering.
 - `ReminderScheduler` decisions: "should notify now?", "missed vs upcoming" classification,

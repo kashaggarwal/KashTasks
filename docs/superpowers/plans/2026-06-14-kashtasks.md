@@ -6,7 +6,14 @@
 
 **Architecture:** A Swift Package with two targets. `KashTasksCore` (a library) holds the pure, testable logic — the `TodoItem` model, `TaskStore` (JSON persistence), `TaskSorting` (group/sort), and `ReminderLogic` (fire/overdue decisions). `KashTasks` (an executable) holds the SwiftUI app shell — `KashTasksApp` (MenuBarExtra entry, permissions, login item), `MenuBarView` (UI), and `ReminderScheduler` (timer + UNUserNotificationCenter glue). A shell script bundles the executable into an ad-hoc-signed `.app`.
 
-**Tech Stack:** Swift 6.1, Swift Package Manager, SwiftUI (`MenuBarExtra`), AppKit, `UserNotifications`, `ServiceManagement` (`SMAppService`), XCTest. No Xcode IDE — Command Line Tools only.
+**Tech Stack:** Swift 6.1, Swift Package Manager, SwiftUI (`MenuBarExtra`), AppKit, `UserNotifications`, `ServiceManagement` (`SMAppService`). No Xcode IDE — Command Line Tools only.
+
+> **Amendment (testing):** Command Line Tools have no XCTest, so the original `swift test`
+> XCTest tasks are superseded. Tests live in an executable target `KashTasksTests` with a
+> `TestRunner` harness (`TestHarness.swift`), run via `swift run KashTasksTests`. Each task's
+> test group is a `runXxxTests(_ t: TestRunner)` function added to `main.swift`. The test
+> *intent* in each task below is unchanged; only the mechanism (harness asserts instead of
+> XCTAssert, `swift run KashTasksTests` instead of `swift test`) differs.
 
 ---
 
