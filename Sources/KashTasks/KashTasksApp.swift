@@ -13,16 +13,26 @@ struct KashTasksApp: App {
     init() {
         let store = TaskStore(fileURL: AppPaths.tasksFile)
         _store = StateObject(wrappedValue: store)
-        _scheduler = StateObject(wrappedValue: ReminderScheduler(store: store))
+        let scheduler = ReminderScheduler(store: store)
+        _scheduler = StateObject(wrappedValue: scheduler)
+        // Start reminders at launch, not on first popover open — the popover content
+        // (and its onAppear) doesn't render until the user clicks the menu bar icon.
+        scheduler.start()
     }
 
     var body: some Scene {
         MenuBarExtra("KashTasks", systemImage: "checklist") {
             MenuBarView()
                 .environmentObject(store)
-                .onAppear { scheduler.start() }
         }
         .menuBarExtraStyle(.window)
+
+        Window("KashTasks Dashboard", id: "dashboard") {
+            DashboardView()
+                .environmentObject(store)
+        }
+        .defaultSize(width: 720, height: 580)
+        .windowResizability(.contentMinSize)
     }
 }
 
