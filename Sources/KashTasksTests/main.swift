@@ -4,5 +4,6 @@ let t = TestRunner()
 runTodoItemTests(t)
 runTaskStoreTests(t)
 runTaskSortingTests(t)
+runReminderLogicTests(t)
 
 t.summarize()
