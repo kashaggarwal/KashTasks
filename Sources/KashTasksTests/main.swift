@@ -2,5 +2,6 @@
 let t = TestRunner()
 
 runTodoItemTests(t)
+runTaskStoreTests(t)
 
 t.summarize()
