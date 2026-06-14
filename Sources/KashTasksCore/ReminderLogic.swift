@@ -1,19 +1,20 @@
 import Foundation
 
 public enum ReminderLogic {
-    /// Tasks whose due time passed while the app was running and have not yet fired.
+    /// Tasks whose due time passed while the app was running and that have not been
+    /// notified for their *current* due date. `notified` maps a task id to the dueDate
+    /// value it last fired for, so changing a due date (snooze / reschedule / recurrence)
+    /// re-arms the reminder.
     public static func tasksToFire(
         _ items: [TodoItem],
         now: Date,
         appStart: Date,
-        notified: Set<UUID>
+        notified: [UUID: Date]
     ) -> [TodoItem] {
         items.filter { item in
-            guard let due = item.dueDate,
-                  !item.isDone,
-                  !notified.contains(item.id)
-            else { return false }
-            return due >= appStart && due <= now
+            guard let due = item.dueDate, !item.isDone else { return false }
+            guard due >= appStart && due <= now else { return false }
+            return notified[item.id] != due
         }
     }
 
