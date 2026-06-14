@@ -10,14 +10,25 @@ struct KashTasksApp: App {
     @StateObject private var store: TaskStore
     @StateObject private var scheduler: ReminderScheduler
 
+    private let notifications: NotificationManager
+    private let quickCapture: QuickCaptureController
+
     init() {
         let store = TaskStore(fileURL: AppPaths.tasksFile)
         _store = StateObject(wrappedValue: store)
+
         let scheduler = ReminderScheduler(store: store)
         _scheduler = StateObject(wrappedValue: scheduler)
-        // Start reminders at launch, not on first popover open — the popover content
-        // (and its onAppear) doesn't render until the user clicks the menu bar icon.
+
+        let notifications = NotificationManager(store: store)
+        self.notifications = notifications
+        let quickCapture = QuickCaptureController(store: store)
+        self.quickCapture = quickCapture
+
+        // Start subsystems (init runs on the main actor for a SwiftUI App).
         scheduler.start()
+        notifications.register()
+        HotkeyManager.shared.register { quickCapture.show() }
     }
 
     var body: some Scene {
@@ -38,9 +49,6 @@ struct KashTasksApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Use the async API: the completion-handler variant runs its closure on a
-        // background queue, which trips the Swift 6 main-actor executor assertion
-        // (SIGTRAP) when invoked from this @MainActor-isolated delegate method.
         Task {
             do {
                 let granted = try await UNUserNotificationCenter.current()
