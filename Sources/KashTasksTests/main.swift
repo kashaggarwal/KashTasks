@@ -5,5 +5,6 @@ runTodoItemTests(t)
 runTaskStoreTests(t)
 runTaskSortingTests(t)
 runReminderLogicTests(t)
+runRecurrenceTests(t)
 
 t.summarize()
