@@ -12,6 +12,7 @@ struct TaskComposer: View {
     @State private var priority: Priority = .medium
     @State private var hasDue = false
     @State private var due = Date()
+    @State private var recurrence: Recurrence = .none
     @FocusState private var titleFocused: Bool
 
     private var canAdd: Bool { !title.trimmingCharacters(in: .whitespaces).isEmpty }
@@ -49,6 +50,14 @@ struct TaskComposer: View {
                 .labelsHidden()
                 .frame(width: 110)
 
+                Picker("", selection: $recurrence) {
+                    ForEach(Recurrence.allCases, id: \.self) { r in
+                        Text(r == .none ? "No repeat" : r.label).tag(r)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 120)
+
                 Toggle(isOn: $hasDue) {
                     Image(systemName: "calendar")
                 }
@@ -78,11 +87,12 @@ struct TaskComposer: View {
             notes: notes,
             priority: priority,
             tag: tag.trimmingCharacters(in: .whitespaces),
-            dueDate: hasDue ? due : nil
+            dueDate: hasDue ? due : nil,
+            recurrence: recurrence
         )
         withAnimation(.easeOut(duration: 0.18)) { store.add(item) }
         title = ""; tag = ""; notes = ""
-        priority = .medium; hasDue = false; due = Date()
+        priority = .medium; hasDue = false; due = Date(); recurrence = .none
         titleFocused = true
     }
 }

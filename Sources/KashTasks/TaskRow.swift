@@ -27,6 +27,12 @@ struct TaskRow: View {
                         .foregroundStyle(item.isDone ? .secondary : .primary)
                         .lineLimit(1)
                     PriorityPill(priority: item.priority)
+                    if item.recurrence != .none {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                            .help(item.recurrence.label)
+                    }
                 }
                 if !item.notes.isEmpty {
                     Text(item.notes)
