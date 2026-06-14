@@ -24,7 +24,46 @@ public final class TaskStore: ObservableObject {
 
     public func toggleDone(_ id: UUID) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
-        items[index].isDone.toggle()
+        if items[index].isDone {
+            items[index].isDone = false
+            save()
+        } else {
+            completeAt(index, now: Date())
+        }
+    }
+
+    /// Complete a task. Recurring dated tasks roll forward instead of being marked done.
+    public func complete(_ id: UUID, now: Date = Date()) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        completeAt(index, now: now)
+    }
+
+    private func completeAt(_ index: Int, now: Date) {
+        let item = items[index]
+        if item.recurrence != .none {
+            let base = item.dueDate ?? now
+            if let next = Recurrence.nextDate(after: base, rule: item.recurrence) {
+                items[index].dueDate = next
+                items[index].isDone = false
+                save()
+                return
+            }
+        }
+        items[index].isDone = true
+        save()
+    }
+
+    public func snooze(_ id: UUID, by interval: TimeInterval, from now: Date = Date()) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        items[index].dueDate = now.addingTimeInterval(interval)
+        items[index].isDone = false
+        save()
+    }
+
+    public func reschedule(_ id: UUID, to date: Date) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        items[index].dueDate = date
+        items[index].isDone = false
         save()
     }
 

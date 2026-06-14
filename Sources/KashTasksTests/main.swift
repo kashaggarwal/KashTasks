@@ -7,5 +7,6 @@ runTaskSortingTests(t)
 runReminderLogicTests(t)
 runRecurrenceTests(t)
 runTodoItemRecurrenceTests(t)
+runTaskStoreMutationTests(t)
 
 t.summarize()
