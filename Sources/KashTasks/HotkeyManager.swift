@@ -24,6 +24,9 @@ final class HotkeyManager {
             installed = true
         }
 
+        // Don't register a second hot key if one is already live (would leak the prior ref).
+        guard hotKeyRef == nil else { return }
+
         let hotKeyID = EventHotKeyID(signature: OSType(0x4B415348), id: 1) // 'KASH'
         let modifiers = UInt32(controlKey | optionKey)
         let keyCode = UInt32(kVK_Space) // 49

@@ -29,6 +29,20 @@ func runTaskStoreMutationTests(_ t: TestRunner) {
         t.expectEqual(updated.dueDate, expectedNext, "recurring complete advances dueDate")
     }
 
+    // completing a long-overdue recurring task lands in the FUTURE (not still overdue)
+    do {
+        let url = tempURL(); defer { try? FileManager.default.removeItem(at: url) }
+        let store = TaskStore(fileURL: url)
+        let now = Date(timeIntervalSince1970: 1_000_000)
+        let fiveDaysAgo = now.addingTimeInterval(-5 * 86_400)
+        let item = TodoItem(title: "stale daily", dueDate: fiveDaysAgo, recurrence: .daily)
+        store.add(item)
+        store.complete(item.id, now: now)
+        let updated = store.items.first!
+        t.expectEqual(updated.isDone, false, "overdue recurring stays open")
+        t.expectTrue((updated.dueDate ?? fiveDaysAgo) > now, "overdue recurring advances into the future")
+    }
+
     do {
         let url = tempURL(); defer { try? FileManager.default.removeItem(at: url) }
         let store = TaskStore(fileURL: url)

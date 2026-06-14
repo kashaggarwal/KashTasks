@@ -42,7 +42,13 @@ public final class TaskStore: ObservableObject {
         let item = items[index]
         if item.recurrence != .none {
             let base = item.dueDate ?? now
-            if let next = Recurrence.nextDate(after: base, rule: item.recurrence) {
+            var next = Recurrence.nextDate(after: base, rule: item.recurrence)
+            // Skip occurrences already in the past so a long-overdue recurring task
+            // lands in the future instead of staying overdue (and re-notifying).
+            while let candidate = next, candidate <= now {
+                next = Recurrence.nextDate(after: candidate, rule: item.recurrence)
+            }
+            if let next {
                 items[index].dueDate = next
                 items[index].isDone = false
                 save()

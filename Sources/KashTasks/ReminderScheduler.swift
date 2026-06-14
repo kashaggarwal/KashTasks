@@ -33,6 +33,10 @@ final class ReminderScheduler: ObservableObject {
     }
 
     private func evaluate() {
+        // Drop tracking for tasks that no longer exist so the map can't grow unbounded.
+        let currentIDs = Set(store.items.map(\.id))
+        notified = notified.filter { currentIDs.contains($0.key) }
+
         let due = ReminderLogic.tasksToFire(
             store.items, now: Date(), appStart: appStart, notified: notified
         )
