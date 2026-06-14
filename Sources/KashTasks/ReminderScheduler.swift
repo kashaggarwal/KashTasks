@@ -7,7 +7,7 @@ import KashTasksCore
 final class ReminderScheduler: ObservableObject {
     private let store: TaskStore
     private let appStart: Date
-    private var notified: Set<UUID> = []
+    private var notified: [UUID: Date] = [:]
     private var timer: Timer?
     private var cancellable: AnyCancellable?
 
@@ -17,17 +17,13 @@ final class ReminderScheduler: ObservableObject {
     }
 
     func start() {
-        // Idempotent: `start()` is called from the menu popover's onAppear, which
-        // fires on every open. Without this guard each open would leak another timer.
         guard timer == nil else { return }
 
-        // Re-evaluate whenever the store changes...
         cancellable = store.$items
             .sink { [weak self] _ in
                 Task { @MainActor in self?.evaluate() }
             }
 
-        // ...and on a steady tick so due times are caught while idle.
         let timer = Timer(timeInterval: 15, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.evaluate() }
         }
@@ -41,7 +37,7 @@ final class ReminderScheduler: ObservableObject {
             store.items, now: Date(), appStart: appStart, notified: notified
         )
         for item in due {
-            notified.insert(item.id)
+            notified[item.id] = item.dueDate
             post(item)
         }
     }
@@ -51,15 +47,14 @@ final class ReminderScheduler: ObservableObject {
         content.title = item.title
         content.body = item.notes.isEmpty ? "Task due now" : item.notes
         content.sound = .default
+        content.categoryIdentifier = NotificationManager.categoryID
+        content.userInfo = ["taskId": item.id.uuidString]
 
         let request = UNNotificationRequest(
             identifier: item.id.uuidString,
             content: content,
-            trigger: nil // deliver immediately
+            trigger: nil
         )
-        // Async API rather than the completion-handler variant: the latter's closure
-        // runs on a background queue and would trip the Swift 6 main-actor executor
-        // assertion (SIGTRAP) since this type is @MainActor-isolated.
         let title = item.title
         Task {
             do {
