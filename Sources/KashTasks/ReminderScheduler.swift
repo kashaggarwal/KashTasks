@@ -7,13 +7,14 @@ import KashTasksCore
 final class ReminderScheduler: ObservableObject {
     private let store: TaskStore
     private let appStart: Date
-    private var notified: [UUID: Date] = [:]
+    private let notified: NotifiedStore
     private var timer: Timer?
     private var cancellable: AnyCancellable?
 
-    init(store: TaskStore, appStart: Date = Date()) {
+    init(store: TaskStore, appStart: Date = Date(), notified: NotifiedStore? = nil) {
         self.store = store
         self.appStart = appStart
+        self.notified = notified ?? NotifiedStore(fileURL: AppPaths.notifiedFile)
     }
 
     func start() {
@@ -33,23 +34,21 @@ final class ReminderScheduler: ObservableObject {
     }
 
     private func evaluate() {
-        // Drop tracking for tasks that no longer exist so the map can't grow unbounded.
-        let currentIDs = Set(store.items.map(\.id))
-        notified = notified.filter { currentIDs.contains($0.key) }
+        notified.prune(keeping: Set(store.items.map(\.id)))
 
-        let due = ReminderLogic.tasksToFire(
-            store.items, now: Date(), appStart: appStart, notified: notified
-        )
+        let due = ReminderLogic.tasksToFire(store.items, now: Date(), notified: notified.entries)
         for item in due {
-            notified[item.id] = item.dueDate
-            post(item)
+            guard let dueDate = item.dueDate else { continue }
+            notified.markNotified(item.id, due: dueDate)
+            post(item, missed: ReminderLogic.wasMissed(due: dueDate, appStart: appStart))
         }
     }
 
-    private func post(_ item: TodoItem) {
+    private func post(_ item: TodoItem, missed: Bool) {
         let content = UNMutableNotificationContent()
         content.title = item.title
-        content.body = item.notes.isEmpty ? "Task due now" : item.notes
+        if missed { content.subtitle = "Overdue" }
+        content.body = item.notes.isEmpty ? (missed ? "This was due earlier" : "Task due now") : item.notes
         content.sound = .default
         content.categoryIdentifier = NotificationManager.categoryID
         content.userInfo = ["taskId": item.id.uuidString]

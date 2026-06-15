@@ -9,4 +9,8 @@ enum AppPaths {
     static var tasksFile: URL {
         supportDirectory.appendingPathComponent("tasks.json")
     }
+
+    static var notifiedFile: URL {
+        supportDirectory.appendingPathComponent("notified.json")
+    }
 }

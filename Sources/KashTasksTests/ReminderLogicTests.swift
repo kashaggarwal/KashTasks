@@ -2,40 +2,48 @@ import Foundation
 import KashTasksCore
 
 func runReminderLogicTests(_ t: TestRunner) {
-    let appStart = Date(timeIntervalSince1970: 1_000)
     let now      = Date(timeIntervalSince1970: 2_000)
-    let dueWhileRunning = Date(timeIntervalSince1970: 1_500)
+    let duePast  = Date(timeIntervalSince1970: 1_500)
 
     do {
-        let item = TodoItem(title: "ring", dueDate: dueWhileRunning)
-        let fired = ReminderLogic.tasksToFire([item], now: now, appStart: appStart, notified: [:])
+        let item = TodoItem(title: "ring", dueDate: duePast)
+        let fired = ReminderLogic.tasksToFire([item], now: now, notified: [:])
         t.expectEqual(fired.map(\.id), [item.id], "fires when unseen")
     }
 
     do {
-        let item = TodoItem(title: "again", dueDate: dueWhileRunning)
-        let fired = ReminderLogic.tasksToFire([item], now: now, appStart: appStart,
-                                              notified: [item.id: dueWhileRunning])
+        let item = TodoItem(title: "again", dueDate: duePast)
+        let fired = ReminderLogic.tasksToFire([item], now: now, notified: [item.id: duePast])
         t.expectTrue(fired.isEmpty, "no fire when notified for same dueDate")
     }
 
     do {
         let newDue = Date(timeIntervalSince1970: 1_800)
         let item = TodoItem(title: "snoozed", dueDate: newDue)
-        let fired = ReminderLogic.tasksToFire([item], now: now, appStart: appStart,
-                                              notified: [item.id: dueWhileRunning])
+        let fired = ReminderLogic.tasksToFire([item], now: now, notified: [item.id: duePast])
         t.expectEqual(fired.map(\.id), [item.id], "re-fires when dueDate changed")
     }
 
     do {
         let future = TodoItem(title: "later", dueDate: Date(timeIntervalSince1970: 5_000))
-        t.expectTrue(ReminderLogic.tasksToFire([future], now: now, appStart: appStart, notified: [:]).isEmpty, "no fire future")
+        t.expectTrue(ReminderLogic.tasksToFire([future], now: now, notified: [:]).isEmpty, "no fire future")
+        // A task that came due while the app was closed must now fire once on launch.
         let missed = TodoItem(title: "missed", dueDate: Date(timeIntervalSince1970: 500))
-        t.expectTrue(ReminderLogic.tasksToFire([missed], now: now, appStart: appStart, notified: [:]).isEmpty, "no late-fire pre-launch")
-        let done = TodoItem(title: "done", dueDate: dueWhileRunning, isDone: true)
-        t.expectTrue(ReminderLogic.tasksToFire([done], now: now, appStart: appStart, notified: [:]).isEmpty, "no fire done")
+        t.expectEqual(ReminderLogic.tasksToFire([missed], now: now, notified: [:]).map(\.id),
+                      [missed.id], "missed reminder fires on launch")
+        let done = TodoItem(title: "done", dueDate: duePast, isDone: true)
+        t.expectTrue(ReminderLogic.tasksToFire([done], now: now, notified: [:]).isEmpty, "no fire done")
         let undated = TodoItem(title: "no date")
-        t.expectTrue(ReminderLogic.tasksToFire([undated], now: now, appStart: appStart, notified: [:]).isEmpty, "no fire undated")
+        t.expectTrue(ReminderLogic.tasksToFire([undated], now: now, notified: [:]).isEmpty, "no fire undated")
+    }
+
+    // Labeling: a reminder whose due time predates this launch is a missed (overdue) fire.
+    do {
+        let appStart = Date(timeIntervalSince1970: 1_000)
+        t.expectTrue(ReminderLogic.wasMissed(due: Date(timeIntervalSince1970: 500), appStart: appStart),
+                     "due before launch is missed")
+        t.expectFalse(ReminderLogic.wasMissed(due: Date(timeIntervalSince1970: 1_500), appStart: appStart),
+                      "due at/after launch is on-time")
     }
 
     do {
