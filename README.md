@@ -3,6 +3,7 @@
 A native macOS **menu bar task tracker with reminders** — local-first, no accounts, no cloud.
 Lives in your menu bar, stores everything on your Mac, and notifies you when tasks are due.
 
+[![release](https://img.shields.io/github/v/release/kashaggarwal/KashTasks?sort=semver)](https://github.com/kashaggarwal/KashTasks/releases/latest)
 ![status: working](https://img.shields.io/badge/status-working-brightgreen)
 
 ## Features
