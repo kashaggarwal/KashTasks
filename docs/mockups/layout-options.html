@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KashTasks — Layout Options</title>
+<style>
+  :root{
+    --base:#06120d;
+    --ink:#ffffff;
+    --muted:rgba(255,255,255,.6);
+    --muted2:rgba(255,255,255,.45);
+    --surface:rgba(0,0,0,.22);
+    --stroke:rgba(255,255,255,.10);
+    --mint:#4ed98c;
+    --amber:#fabe4d;
+    --red:#f7726b;
+    --green:#66d98c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+    background:#0c0f0e;
+    color:#222;
+    padding:40px 28px 60px;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1{color:#fff;font-size:22px;font-weight:700;text-align:center;margin-bottom:6px}
+  .sub{color:#8a948f;text-align:center;font-size:13px;margin-bottom:34px}
+  .stage{
+    display:flex;gap:40px;justify-content:center;align-items:flex-start;flex-wrap:wrap;
+  }
+  .col{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .label{
+    color:#fff;font-size:13px;font-weight:600;letter-spacing:.2px;
+    background:rgba(255,255,255,.08);padding:6px 14px;border-radius:999px;
+  }
+  .label span{color:#7f8a85;font-weight:500}
+
+  /* ---- The aurora card ---- */
+  .card{
+    width:430px;border-radius:26px;overflow:hidden;position:relative;
+    background:var(--base);
+    box-shadow:0 24px 60px rgba(0,0,0,.5);
+    color:var(--ink);
+    display:flex;flex-direction:column;
+  }
+  .aurora{
+    position:absolute;inset:0;z-index:0;
+    background:
+      radial-gradient(120% 90% at 22% 18%, #2fa86b 0%, transparent 46%),
+      radial-gradient(120% 100% at 86% 30%, #0e6b57 0%, transparent 50%),
+      radial-gradient(140% 120% at 60% 108%, #0b3d2e 0%, transparent 55%),
+      radial-gradient(120% 120% at 8% 92%, #0e6b57 0%, transparent 50%),
+      linear-gradient(160deg,#0a3326,#06231a);
+    filter:saturate(1.05);
+  }
+  .card > *{position:relative;z-index:1}
+
+  .pad{padding:0 22px}
+
+  /* header */
+  .top{display:flex;align-items:center;gap:11px;padding:30px 22px 0}
+  .glyph{
+    width:40px;height:40px;border-radius:50%;
+    background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;
+    font-size:18px;border:1px solid rgba(255,255,255,.18);
+  }
+  .title{font-size:20px;font-weight:700}
+  .date{margin-left:auto;font-size:12px;color:var(--muted);font-weight:500}
+
+  /* inline stat strip */
+  .stats{display:flex;align-items:stretch;padding:22px 22px 18px;gap:0}
+  .stat{flex:1;display:flex;flex-direction:column;gap:2px;padding:0 14px;position:relative}
+  .stat:not(:first-child)::before{
+    content:"";position:absolute;left:0;top:6px;bottom:6px;width:1px;background:rgba(255,255,255,.13);
+  }
+  .stat .ico{font-size:13px;margin-bottom:3px}
+  .stat .num{font-size:26px;font-weight:700;line-height:1;font-feature-settings:"tnum"}
+  .stat .cap{font-size:11px;color:var(--muted);font-weight:500}
+
+  /* filter pills */
+  .filters{display:flex;gap:4px;background:var(--surface);border:1px solid var(--stroke);
+    border-radius:999px;padding:4px;margin:0 22px}
+  .filters .f{flex:1;text-align:center;font-size:12px;font-weight:600;color:var(--muted);
+    padding:7px 0;border-radius:999px;cursor:default}
+  .filters .f.on{background:rgba(255,255,255,.92);color:#0c2018;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+
+  /* divider */
+  .div{height:1px;background:rgba(255,255,255,.10);margin:16px 22px}
+
+  /* task rows */
+  .list{display:flex;flex-direction:column;gap:6px;padding:6px 14px}
+  .section{font-size:10px;font-weight:700;letter-spacing:.7px;color:var(--muted2);
+    padding:6px 8px 2px;display:flex;gap:6px;align-items:center}
+  .section .cnt{background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);
+    border-radius:999px;padding:1px 6px;font-size:10px}
+  .row{display:flex;align-items:center;gap:11px;background:rgba(0,0,0,.10);
+    border-radius:12px;padding:10px 12px}
+  .row .ck{width:17px;height:17px;border-radius:50%;border:1.6px solid rgba(255,255,255,.5)}
+  .row .tt{font-size:13px;font-weight:500}
+  .pill{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:999px}
+  .pill.med{color:#fabe4d;background:rgba(250,190,77,.16)}
+  .pill.high{color:#f7726b;background:rgba(247,114,107,.16)}
+  .row .due{margin-left:auto;font-size:10px;font-weight:600;color:#f7726b;
+    background:rgba(247,114,107,.14);padding:3px 8px;border-radius:999px;display:flex;gap:4px;align-items:center}
+
+  /* CTA */
+  .cta-wrap{padding:14px 22px 22px}
+  .cta{display:flex;align-items:center;gap:10px;
+    background:linear-gradient(90deg,rgba(0,0,0,.92),#0b3d2e);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:999px;padding:7px 18px 7px 7px;}
+  .cta .arrow{width:32px;height:32px;border-radius:50%;background:#fff;color:#000;
+    display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+  .cta .ctt{font-size:14px;font-weight:600}
+  .cta.add{justify-content:flex-start}
+
+  /* composer field for option B mini */
+  .field{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--stroke);
+    border-radius:12px;padding:11px 13px;color:var(--muted)}
+  .field .plus{color:var(--mint);font-size:16px}
+
+  .below{width:430px}
+  .below .filters{margin:18px 0 12px}
+  .below .list{padding:0}
+  .below .row{margin-bottom:6px}
+</style>
+</head>
+<body>
+  <h1>KashTasks — Dashboard Layout Options</h1>
+  <div class="sub">Same aurora design language · two ways to structure the layout. Pick a direction.</div>
+
+  <div class="stage">
+
+    <!-- OPTION 1 : one unified card -->
+    <div class="col">
+      <div class="label">Option 1 &nbsp;·&nbsp; <span>One unified card</span></div>
+      <div class="card">
+        <div class="aurora"></div>
+        <div class="top">
+          <div class="glyph">✓</div>
+          <div class="title">Today</div>
+          <div class="date">Mon, 15 June</div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="ico">📥</div><div class="num">3</div><div class="cap">Open</div></div>
+          <div class="stat"><div class="ico">☀️</div><div class="num">3</div><div class="cap">Due Today</div></div>
+          <div class="stat"><div class="ico">⚠️</div><div class="num">3</div><div class="cap">Overdue</div></div>
+          <div class="stat"><div class="ico">✅</div><div class="num">0</div><div class="cap">Done</div></div>
+        </div>
+        <div class="filters">
+          <div class="f on">All</div><div class="f">Today</div><div class="f">Overdue</div><div class="f">Done</div>
+        </div>
+        <div class="div"></div>
+        <div class="list">
+          <div class="section">INBOX <span class="cnt">2</span></div>
+          <div class="row"><div class="ck"></div><div class="tt">Test reminder</div><div class="pill med">MED</div><div class="due">⏱ 7h</div></div>
+          <div class="row"><div class="ck"></div><div class="tt">test 2</div><div class="pill med">MED</div><div class="due">⏱ 6h</div></div>
+          <div class="section">SEEZ <span class="cnt">1</span></div>
+          <div class="row"><div class="ck"></div><div class="tt">Finish Master Deck</div><div class="pill high">HIGH</div><div class="due">⏱ 15h</div></div>
+        </div>
+        <div class="div"></div>
+        <div class="cta-wrap">
+          <div class="cta"><div class="arrow">→</div><div class="ctt">Add a task</div></div>
+        </div>
+      </div>
+      <div style="color:#7f8a85;font-size:12px;max-width:420px;text-align:center;line-height:1.5">
+        Everything lives in one floating card — banner, stat strip, the list scrolls in the middle,
+        CTA pinned at the bottom. Most faithful to your reference, most distinct from a normal task app.
+      </div>
+    </div>
+
+    <!-- OPTION 2 : hero card + list below -->
+    <div class="col">
+      <div class="label">Option 2 &nbsp;·&nbsp; <span>Hero card + list below</span></div>
+      <div class="below">
+        <div class="card" style="margin-bottom:18px">
+          <div class="aurora"></div>
+          <div class="top">
+            <div class="glyph">✓</div>
+            <div class="title">Today</div>
+            <div class="date">Mon, 15 June</div>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="ico">📥</div><div class="num">3</div><div class="cap">Open</div></div>
+            <div class="stat"><div class="ico">☀️</div><div class="num">3</div><div class="cap">Due Today</div></div>
+            <div class="stat"><div class="ico">⚠️</div><div class="num">3</div><div class="cap">Overdue</div></div>
+            <div class="stat"><div class="ico">✅</div><div class="num">0</div><div class="cap">Done</div></div>
+          </div>
+          <div class="cta-wrap" style="padding-top:6px">
+            <div class="cta"><div class="arrow">→</div><div class="ctt">Add a task</div></div>
+          </div>
+        </div>
+
+        <!-- list sits on the plain aurora below the card -->
+        <div style="background:linear-gradient(160deg,#0a3326,#06231a);border-radius:22px;padding:16px;position:relative;overflow:hidden">
+          <div class="aurora" style="opacity:.85"></div>
+          <div style="position:relative;z-index:1">
+            <div class="filters" style="margin:0 0 14px">
+              <div class="f on">All</div><div class="f">Today</div><div class="f">Overdue</div><div class="f">Done</div>
+            </div>
+            <div class="list" style="padding:0">
+              <div class="section">INBOX <span class="cnt">2</span></div>
+              <div class="row" style="margin-bottom:6px"><div class="ck"></div><div class="tt">Test reminder</div><div class="pill med">MED</div><div class="due">⏱ 7h</div></div>
+              <div class="row" style="margin-bottom:6px"><div class="ck"></div><div class="tt">test 2</div><div class="pill med">MED</div><div class="due">⏱ 6h</div></div>
+              <div class="section">SEEZ <span class="cnt">1</span></div>
+              <div class="row"><div class="ck"></div><div class="tt">Finish Master Deck</div><div class="pill high">HIGH</div><div class="due">⏱ 15h</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="color:#7f8a85;font-size:12px;max-width:420px;text-align:center;line-height:1.5;margin-top:14px">
+        A profile-style hero card (banner, stat strip, CTA) on top; the task list flows below it.
+        Card feel for the top region, more conventional overall — easier to scan long lists.
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -3,9 +3,35 @@ import KashTasksCore
 
 // Small, shared visual vocabulary so the popover and the dashboard feel like one app.
 enum Theme {
-    static let cardCorner: CGFloat = 12
-    static let rowCorner: CGFloat = 9
-    static let accent = Color.accentColor
+    static let cardCorner: CGFloat = 18
+    static let rowCorner: CGFloat = 12
+    static let accent = Color(red: 0.30, green: 0.85, blue: 0.55)  // mint/moss
+
+    // MARK: Canvas (the dark base the aurora cards float on)
+    static let canvas = Color(red: 0.02, green: 0.07, blue: 0.05)
+    static let canvasDeep = Color(red: 0.01, green: 0.04, blue: 0.03)
+
+    // MARK: Hero card (the subdued dark panel above the highlighted list)
+    static let heroTop = Color(red: 0.06, green: 0.17, blue: 0.13)
+    static let heroBottom = Color(red: 0.03, green: 0.09, blue: 0.07)
+
+    // MARK: Aurora palette (deep, moody greens)
+    static let auroraBase = Color(red: 0.02, green: 0.11, blue: 0.08)
+    static let auroraDeep = Color(red: 0.04, green: 0.24, blue: 0.18)
+    static let auroraTeal = Color(red: 0.05, green: 0.42, blue: 0.34)
+    static let auroraMoss = Color(red: 0.18, green: 0.66, blue: 0.42)
+
+    /// 9 colors (row-major) for the 3×3 aurora mesh.
+    static let auroraMesh: [Color] = [
+        auroraDeep, auroraTeal, auroraBase,
+        auroraTeal, auroraMoss, auroraDeep,
+        auroraBase, auroraDeep, auroraTeal,
+    ]
+
+    /// Translucent surfaces that float on the aurora.
+    static let surface = Color.black.opacity(0.22)
+    static let surfaceStroke = Color.white.opacity(0.10)
+    static let softShadow = Color.black.opacity(0.28)
 }
 
 extension Priority {
@@ -87,32 +113,66 @@ struct DueChip: View {
     }
 }
 
-/// A stat tile for the dashboard header (Open / Today / Overdue / Done).
-struct StatCard: View {
+/// One stat in the inline header strip (icon · big number · label), styled
+/// after the reference card's Rating/Posts/Followers row.
+struct StatItem: View {
     let value: Int
     let label: String
     let systemImage: String
     let tint: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 3) {
             Image(systemName: systemImage)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(tint)
+                .padding(.bottom, 2)
             Text("\(value)")
-                .font(.system(size: 26, weight: .semibold, design: .rounded))
-                .foregroundStyle(.primary)
+                .font(.system(size: 27, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
                 .contentTransition(.numericText())
             Text(label)
                 .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.6))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: Theme.cardCorner, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.cardCorner, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.06))
-        )
+    }
+}
+
+
+/// The signature CTA from the design reference: a dark gradient pill with a
+/// circular arrow badge. Used for the dashboard's primary "Add" action.
+struct GradientPillButton: View {
+    let title: String
+    var systemImage: String = "arrow.right"
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 9) {
+                ZStack {
+                    Circle().fill(.white)
+                    Image(systemName: systemImage)
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(.black)
+                }
+                .frame(width: 24, height: 24)
+                Text(title)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.white)
+            }
+            .padding(.leading, 6)
+            .padding(.trailing, 16)
+            .padding(.vertical, 6)
+            .background(
+                LinearGradient(
+                    colors: [.black.opacity(0.92), Theme.auroraDeep],
+                    startPoint: .leading, endPoint: .trailing
+                ),
+                in: Capsule()
+            )
+            .overlay(Capsule().strokeBorder(.white.opacity(0.12), lineWidth: 1))
+        }
+        .buttonStyle(PressableStyle())
     }
 }

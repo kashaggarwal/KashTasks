@@ -99,17 +99,48 @@ Two targets:
     permission). The C callback is non-capturing and dispatches to the main thread.
   - `QuickCapture` — a borderless floating `NSPanel` (uses a `KeyablePanel` subclass overriding
     `canBecomeKey` so the text field can focus) hosting a SwiftUI capture field.
-  - `DesignSystem`, `MenuBarView`, `DashboardView`, `TaskRow`, `TaskComposer` — UI + shared visual
-    vocabulary (priority colors, pills, due chips, stat cards, press-feedback button style).
+  - `DesignSystem`, `MenuBarView`, `DashboardView`, `Aurora`, `TaskRow`, `TaskComposer` — UI +
+    shared visual vocabulary (priority colors, pills, due chips, `StatItem`, `GradientPillButton`,
+    press-feedback button style).
+
+## UI: the v2 "Aurora" dashboard
+
+The dashboard (v2) is built around a deep-green aurora aesthetic. Keep these pieces in mind when
+touching the UI:
+
+- **`Aurora.swift`** owns the look:
+  - `AuroraMesh` — the drifting gradient, used as a *card fill* (clip it yourself). It's a real
+    `MeshGradient` gated behind `if #available(macOS 15.0, *)`, with a `StaticAurora` radial-gradient
+    fallback for macOS 13–14. The drift is a `TimelineView(.animation)` nudging the mesh's interior
+    control points on slow sines (corners stay pinned so edges never gap). **Preserve the
+    availability guard** — the package targets macOS 13.
+  - `DashboardBackground` — the dark canvas the cards float on, plus `WindowConfigurator` (hidden
+    transparent title bar, `fullSizeContentView`, `darkAqua` appearance, opaque window).
+  - `AuroraCard` — rounded card with hairline + soft shadow. `dark: true` swaps the aurora fill for
+    a subdued dark-green gradient (`Theme.heroTop/heroBottom`); `dim:` darkens the aurora.
+- **`DashboardView`** = two cards: a `dark` **hero card** (glyph, "Today", date pill, inline stat
+  strip via `StatItem`, and the collapsible `TaskComposer`) over a vibrant-aurora **list panel**
+  (pill filter bar + grouped `TaskRow` list). The hero is intentionally the *calm* surface and the
+  list panel is the *highlighted* one.
+- **`TaskComposer`** collapses by default (title field + `slider.horizontal.3` toggle + gradient
+  Add pill); the toggle reveals the tag / priority / repeat / due detail row.
+- **`Theme`** (in `DesignSystem`) holds all tokens: `canvas/canvasDeep`, `heroTop/heroBottom`,
+  the `auroraBase/Deep/Teal/Moss` palette and `auroraMesh` array, `surface/surfaceStroke`, the
+  mint `accent`, and corner radii. Pull colors from here rather than hardcoding.
+- Because the window is forced to `darkAqua` with a dark backdrop, foreground text is `.white` /
+  `.white.opacity(...)` rather than `.primary/.secondary` in the dashboard views.
 
 ## Conventions
 
 - **TDD for `KashTasksCore`:** write the failing test in `KashTasksTests`, run it, implement, re-run.
 - **Small, focused files**, one responsibility each. Follow existing patterns.
 - **Commit per logical change** with a clear message; no AI attribution (see constraint 3).
-- Current development branch: **`build-kashtasks`** (off `master`).
+- Releases are tagged on **`master`** (`v1.0.0` = initial release, `v2.0.0` = Aurora dashboard
+  redesign). Bump the version in **`scripts/bundle.sh`** (`CFBundleVersion` /
+  `CFBundleShortVersionString`) — the generated `KashTasks.app` is gitignored.
 - Design specs + step-by-step implementation plans for completed work live in
-  `docs/superpowers/specs/` and `docs/superpowers/plans/`. Add new ones there for substantial work.
+  `docs/superpowers/specs/` and `docs/superpowers/plans/`; design-exploration mockups live in
+  `docs/mockups/`. Add new ones there for substantial work.
 
 ## Known limitations / deferred ideas
 

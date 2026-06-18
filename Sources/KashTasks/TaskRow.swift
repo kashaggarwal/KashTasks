@@ -15,7 +15,7 @@ struct TaskRow: View {
             } label: {
                 Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 17))
-                    .foregroundStyle(item.isDone ? Theme.accent : Color.secondary.opacity(0.7))
+                    .foregroundStyle(item.isDone ? Theme.accent : .white.opacity(0.55))
             }
             .buttonStyle(PressableStyle(scale: 0.9))
 
@@ -23,21 +23,21 @@ struct TaskRow: View {
                 HStack(spacing: 6) {
                     Text(item.title)
                         .font(.system(size: 13, weight: .medium))
-                        .strikethrough(item.isDone, color: .secondary)
-                        .foregroundStyle(item.isDone ? .secondary : .primary)
+                        .strikethrough(item.isDone, color: .white.opacity(0.5))
+                        .foregroundStyle(item.isDone ? .white.opacity(0.5) : .white)
                         .lineLimit(1)
                     PriorityPill(priority: item.priority)
                     if item.recurrence != .none {
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.white.opacity(0.5))
                             .help(item.recurrence.label)
                     }
                 }
                 if !item.notes.isEmpty {
                     Text(item.notes)
                         .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.white.opacity(0.55))
                         .lineLimit(1)
                 }
             }
@@ -53,7 +53,7 @@ struct TaskRow: View {
             } label: {
                 Image(systemName: "trash")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.6))
                     .frame(width: 22, height: 22)
                     .contentShape(Rectangle())
             }
@@ -62,10 +62,12 @@ struct TaskRow: View {
             .help("Delete task")
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 9)
+        .padding(.vertical, 10)
+        // Floats on the aurora: a faint dark fill that deepens on hover for
+        // affordance. No border or shadow — the aurora gives the depth.
         .background(
-            RoundedRectangle(cornerRadius: Theme.rowCorner, style: .continuous)
-                .fill(Color.primary.opacity(hovering ? 0.05 : 0))
+            Color.black.opacity(hovering ? 0.22 : 0.10),
+            in: RoundedRectangle(cornerRadius: Theme.rowCorner, style: .continuous)
         )
         .onHover { hovering = $0 }
     }

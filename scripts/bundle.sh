@@ -24,8 +24,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundleName</key><string>KashTasks</string>
     <key>CFBundleDisplayName</key><string>KashTasks</string>
     <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
-    <key>CFBundleVersion</key><string>1.0</string>
-    <key>CFBundleShortVersionString</key><string>1.0</string>
+    <key>CFBundleVersion</key><string>2.0</string>
+    <key>CFBundleShortVersionString</key><string>2.0</string>
     <key>CFBundleExecutable</key><string>$BIN_NAME</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>LSMinimumSystemVersion</key><string>13.0</string>

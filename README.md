@@ -6,11 +6,28 @@ Lives in your menu bar, stores everything on your Mac, and notifies you when tas
 [![release](https://img.shields.io/github/v/release/kashaggarwal/KashTasks?sort=semver)](https://github.com/kashaggarwal/KashTasks/releases/latest)
 ![status: working](https://img.shields.io/badge/status-working-brightgreen)
 
+## What's new in v2 — the "Aurora" dashboard
+
+v2 is a ground-up redesign of the dashboard around a distinctive **deep-green aurora** look,
+inspired by a custom UI reference rather than the usual list-app template:
+
+- A **slowly drifting aurora gradient** (a true `MeshGradient` on macOS 15+, with a static
+  fallback on older systems) — alive but calm, and fully opaque so it looks the same over any
+  window or wallpaper.
+- A **two-card layout**: a subdued dark **hero card** on top (app glyph, date, an inline
+  stat strip, and a collapsible composer with a gradient "Add" pill) sitting above a highlighted
+  **aurora list panel** that holds the filters and your grouped tasks.
+- An **inline stat strip** (Open · Due Today · Overdue · Done) instead of boxed tiles, a
+  **pill filter bar**, and the signature **circular-arrow gradient CTA** from the reference.
+
+The data model, reminders, hotkey, and notifications are unchanged from v1 — this release is the UI.
+
 ## Features
 
 - **Menu bar popover** — quick-add, live open/overdue counts, and your next tasks at a glance.
-- **Dashboard window** — stat cards (Open / Due Today / Overdue / Done), filters, tag-grouped
-  task rows with priority pills and due chips, and a full composer.
+- **Aurora dashboard window** — a dark hero card with an inline stat strip
+  (Open / Due Today / Overdue / Done) and a collapsible composer, above an aurora-highlighted
+  panel with pill filters and tag-grouped task rows (priority pills, due chips).
 - **Global quick-capture** — press **⌃⌥Space** (Control+Option+Space) from *any* app to pop a
   capture field, type a task, press Enter. No Accessibility permission required.
 - **Reminders** — native macOS notifications fire once at a task's due time. Tasks that came due
@@ -23,7 +40,8 @@ Lives in your menu bar, stores everything on your Mac, and notifies you when tas
 
 ## Requirements
 
-- macOS 13 (Ventura) or later.
+- macOS 13 (Ventura) or later. The aurora dashboard uses a `MeshGradient` on **macOS 15+** and
+  automatically falls back to a static layered gradient on macOS 13–14.
 - **Xcode is NOT required.** Only the Xcode **Command Line Tools** (`xcode-select --install`) and
   Swift 6.x. The project builds entirely from the command line.
 
@@ -81,15 +99,17 @@ KashTasks/
 │   ├── KashTasks/                # the app (SwiftUI + AppKit)
 │   │   ├── KashTasksApp.swift    #   @main: menu bar + dashboard scenes, wiring
 │   │   ├── MenuBarView.swift     #   compact popover
-│   │   ├── DashboardView.swift   #   dashboard window
-│   │   ├── DesignSystem.swift    #   shared colors, pills, chips, stat cards
-│   │   ├── TaskRow.swift, TaskComposer.swift
+│   │   ├── DashboardView.swift   #   aurora dashboard: hero card + list panel
+│   │   ├── Aurora.swift          #   drifting MeshGradient, dark canvas, AuroraCard, window chrome
+│   │   ├── DesignSystem.swift    #   theme tokens (aurora palette), pills, chips, StatItem, CTA
+│   │   ├── TaskRow.swift, TaskComposer.swift   # row + collapsible composer
 │   │   ├── ReminderScheduler.swift   # timer + notification delivery
 │   │   ├── NotificationManager.swift # actionable-notification handling
 │   │   ├── HotkeyManager.swift   #   global ⌃⌥Space (Carbon)
 │   │   └── QuickCapture.swift    #   floating capture panel
 │   └── KashTasksTests/           # executable test runner (no XCTest)
-└── docs/superpowers/             # design specs + implementation plans
+├── docs/superpowers/             # design specs + implementation plans
+└── docs/mockups/                 # design-exploration HTML mockups
 ```
 
 ## Design notes

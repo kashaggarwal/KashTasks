@@ -1,8 +1,9 @@
 import SwiftUI
 import KashTasksCore
 
-/// The full "add a task" composer used at the bottom of the dashboard.
-/// Title is always visible; the detail row (tag, priority, due) sits beneath it.
+/// The "add a task" composer in the hero card. Collapsed by default — just the
+/// title field and the Add pill — with a toggle that reveals tag / priority /
+/// repeat / due so the hero card stays compact.
 struct TaskComposer: View {
     @EnvironmentObject var store: TaskStore
 
@@ -13,71 +14,101 @@ struct TaskComposer: View {
     @State private var hasDue = false
     @State private var due = Date()
     @State private var recurrence: Recurrence = .none
+    @State private var expanded = false
     @FocusState private var titleFocused: Bool
 
     private var canAdd: Bool { !title.trimmingCharacters(in: .whitespaces).isEmpty }
 
     var body: some View {
         VStack(spacing: 9) {
-            HStack(spacing: 8) {
-                Image(systemName: "plus.circle.fill")
-                    .foregroundStyle(Theme.accent)
-                    .font(.system(size: 15))
-                TextField("Add a task…", text: $title)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 13))
-                    .focused($titleFocused)
-                    .onSubmit(add)
-            }
-            .padding(.horizontal, 11)
-            .padding(.vertical, 9)
-            .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-
-            HStack(spacing: 8) {
-                TextField("Tag", text: $tag)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 12))
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 6)
-                    .frame(width: 110)
-                    .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
-
-                Picker("", selection: $priority) {
-                    ForEach(Priority.allCases, id: \.self) { p in
-                        Text(p.label).tag(p)
-                    }
+            HStack(spacing: 9) {
+                HStack(spacing: 9) {
+                    Image(systemName: "plus.circle.fill")
+                        .foregroundStyle(Theme.accent)
+                        .font(.system(size: 16))
+                    TextField("Add a task…", text: $title)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 13))
+                        .foregroundStyle(.white)
+                        .focused($titleFocused)
+                        .onSubmit(add)
                 }
-                .labelsHidden()
-                .frame(width: 110)
+                .padding(.horizontal, 13)
+                .padding(.vertical, 11)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Theme.surfaceStroke, lineWidth: 1))
 
-                Picker("", selection: $recurrence) {
-                    ForEach(Recurrence.allCases, id: \.self) { r in
-                        Text(r == .none ? "No repeat" : r.label).tag(r)
-                    }
-                }
-                .labelsHidden()
-                .frame(width: 120)
+                optionsToggle
 
-                Toggle(isOn: $hasDue) {
-                    Image(systemName: "calendar")
-                }
-                .toggleStyle(.button)
-                .help("Set a due date")
-
-                if hasDue {
-                    DatePicker("", selection: $due)
-                        .labelsHidden()
-                        .datePickerStyle(.compact)
-                }
-
-                Spacer(minLength: 6)
-
-                FilledButton(title: "Add", systemImage: "return", action: add)
+                GradientPillButton(title: "Add", action: add)
                     .disabled(!canAdd)
                     .opacity(canAdd ? 1 : 0.5)
             }
+
+            if expanded {
+                detailRow
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
         }
-        .padding(12)
+        .padding(.top, 2)
+    }
+
+    private var optionsToggle: some View {
+        Button {
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) { expanded.toggle() }
+        } label: {
+            Image(systemName: "slider.horizontal.3")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(expanded ? .white : .white.opacity(0.65))
+                .frame(width: 38, height: 38)
+                .background(.white.opacity(expanded ? 0.18 : 0.08), in: Circle())
+                .overlay(Circle().strokeBorder(.white.opacity(0.10), lineWidth: 1))
+        }
+        .buttonStyle(PressableStyle())
+        .help("Tag, priority, repeat, due date")
+    }
+
+    private var detailRow: some View {
+        HStack(spacing: 8) {
+            TextField("Tag", text: $tag)
+                .textFieldStyle(.plain)
+                .font(.system(size: 12))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .frame(width: 110)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+            Picker("", selection: $priority) {
+                ForEach(Priority.allCases, id: \.self) { p in
+                    Text(p.label).tag(p)
+                }
+            }
+            .labelsHidden()
+            .frame(width: 110)
+
+            Picker("", selection: $recurrence) {
+                ForEach(Recurrence.allCases, id: \.self) { r in
+                    Text(r == .none ? "No repeat" : r.label).tag(r)
+                }
+            }
+            .labelsHidden()
+            .frame(width: 120)
+
+            Toggle(isOn: $hasDue) {
+                Image(systemName: "calendar")
+            }
+            .toggleStyle(.button)
+            .help("Set a due date")
+
+            if hasDue {
+                DatePicker("", selection: $due)
+                    .labelsHidden()
+                    .datePickerStyle(.compact)
+            }
+
+            Spacer(minLength: 6)
+        }
     }
 
     private func add() {

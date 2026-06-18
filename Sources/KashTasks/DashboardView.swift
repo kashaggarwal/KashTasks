@@ -46,52 +46,92 @@ struct DashboardView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-            Divider().opacity(0.5)
-            filterBar
-            taskList
-            Divider().opacity(0.5)
-            TaskComposer()
+        VStack(spacing: 14) {
+            heroCard
+            listPanel
         }
-        .frame(minWidth: 640, minHeight: 540)
-        .background(Color(nsColor: .windowBackgroundColor))
+        .padding(.horizontal, 18)
+        .padding(.top, 30)   // clear the traffic-light buttons under the transparent title bar
+        .padding(.bottom, 18)
+        .frame(minWidth: 660, minHeight: 600)
+        .background(DashboardBackground())
     }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 8) {
-                Image(systemName: "checklist")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
-                Text("Dashboard")
-                    .font(.system(size: 19, weight: .bold))
-                Spacer()
-                Text(now.formatted(date: .complete, time: .omitted))
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-            }
+    // MARK: Hero card — banner glyph, identity, inline stat strip, composer/CTA.
+    private var heroCard: some View {
+        AuroraCard(cornerRadius: 26, dark: true) {
+            VStack(alignment: .leading, spacing: 20) {
+                HStack(spacing: 11) {
+                    Image(systemName: "checklist")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 40, height: 40)
+                        .background(.white.opacity(0.14), in: Circle())
+                        .overlay(Circle().strokeBorder(.white.opacity(0.18), lineWidth: 1))
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("Today")
+                            .font(.system(size: 21, weight: .bold))
+                            .foregroundStyle(.white)
+                        Text("Your tasks at a glance")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.55))
+                    }
+                    Spacer()
+                    Text(now.formatted(date: .abbreviated, time: .omitted))
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.75))
+                        .padding(.horizontal, 11).padding(.vertical, 6)
+                        .background(.white.opacity(0.10), in: Capsule())
+                }
 
-            HStack(spacing: 12) {
-                StatCard(value: openCount, label: "Open", systemImage: "tray.full", tint: Theme.accent)
-                StatCard(value: todayCount, label: "Due Today", systemImage: "sun.max", tint: Color(red: 0.95, green: 0.62, blue: 0.20))
-                StatCard(value: overdueCount, label: "Overdue", systemImage: "exclamationmark.triangle", tint: Color(red: 0.93, green: 0.34, blue: 0.31))
-                StatCard(value: doneCount, label: "Done", systemImage: "checkmark.seal", tint: Color(red: 0.30, green: 0.72, blue: 0.45))
+                HStack(spacing: 0) {
+                    StatItem(value: openCount, label: "Open", systemImage: "tray.full", tint: Theme.accent)
+                    StatItem(value: todayCount, label: "Due Today", systemImage: "sun.max", tint: Color(red: 0.98, green: 0.74, blue: 0.30))
+                    StatItem(value: overdueCount, label: "Overdue", systemImage: "exclamationmark.triangle", tint: Color(red: 0.97, green: 0.45, blue: 0.42))
+                    StatItem(value: doneCount, label: "Done", systemImage: "checkmark.seal", tint: Color(red: 0.40, green: 0.85, blue: 0.55))
+                }
+
+                TaskComposer()
+            }
+            .padding(22)
+        }
+    }
+
+    // MARK: List panel — filter pills + the scrolling grouped task list.
+    private var listPanel: some View {
+        AuroraCard(cornerRadius: 22) {
+            VStack(spacing: 0) {
+                filterBar
+                taskList
             }
         }
-        .padding(18)
     }
 
     private var filterBar: some View {
-        Picker("", selection: $filter) {
+        HStack(spacing: 4) {
             ForEach(TaskFilter.allCases) { f in
-                Text(f.rawValue).tag(f)
+                let active = (f == filter)
+                Text(f.rawValue)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(active ? .black.opacity(0.85) : .white.opacity(0.65))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 7)
+                    .background {
+                        if active {
+                            Capsule().fill(.white.opacity(0.92))
+                                .shadow(color: .black.opacity(0.18), radius: 5, y: 2)
+                        }
+                    }
+                    .contentShape(Capsule())
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { filter = f }
+                    }
             }
         }
-        .pickerStyle(.segmented)
-        .labelsHidden()
-        .padding(.horizontal, 18)
-        .padding(.vertical, 12)
+        .padding(4)
+        .background(.black.opacity(0.22), in: Capsule())
+        .overlay(Capsule().strokeBorder(.white.opacity(0.10), lineWidth: 1))
+        .padding(16)
     }
 
     private var taskList: some View {
@@ -106,15 +146,15 @@ struct DashboardView: View {
                                 Text(group.tag.uppercased())
                                     .font(.system(size: 10, weight: .bold))
                                     .tracking(0.7)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.white.opacity(0.5))
                                 Text("\(group.items.count)")
                                     .font(.system(size: 10, weight: .semibold))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.white.opacity(0.7))
                                     .padding(.horizontal, 5)
                                     .padding(.vertical, 1)
-                                    .background(Color.primary.opacity(0.07), in: Capsule())
+                                    .background(.white.opacity(0.12), in: Capsule())
                             }
-                            .padding(.horizontal, 12)
+                            .padding(.horizontal, 14)
                             .padding(.bottom, 2)
 
                             ForEach(group.items) { item in
@@ -123,8 +163,9 @@ struct DashboardView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .padding(.top, 2)
+                .padding(.bottom, 14)
                 .animation(.easeOut(duration: 0.2), value: store.items)
             }
         }
@@ -135,10 +176,10 @@ struct DashboardView: View {
         VStack(spacing: 10) {
             Image(systemName: filter == .done ? "checkmark.circle" : "sparkles")
                 .font(.system(size: 34, weight: .light))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.5))
             Text(emptyTitle)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.6))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 70)
